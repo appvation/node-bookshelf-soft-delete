@@ -62,14 +62,15 @@ module.exports = function (Bookshelf) {
     restore: function () {
       if (this.softActivated) {
         if (this.get(this.softFields[0])) {
+          var saveObject = {};
           if (this.softFields[1]) {
             // Set restored_at
-            this.set(this.softFields[1], new Date());
+            saveObject[this.softFields[1]] = new Date();
           } else {
             // If restored_at does not exist, remove the deleted_at
-            this.set(this.softFields[0], null);
+            saveObject[this.softFields[0]] = null;
           }
-          return this.save({}, {patch: true});
+          return this.save(saveObject, {patch: true});
         }
       }
       else {
@@ -84,11 +85,12 @@ module.exports = function (Bookshelf) {
         var softFields = model.softFields;
         return model.triggerThen('destroying', model, opts)
           .then(function () {
+            var saveObject = {};
             if (softFields[1]) {
-              model.set(softFields[1], null);
+              saveObject[softFields[1]] = null;
             }
-            model.set(softFields[0], new Date());
-            return model.save({}, {patch: true});
+            saveObject[softFields[0]] = new Date();
+            return model.save(saveObject, {patch: true});
           })
           .then(function () {
             return model.triggerThen('destroyed', model, undefined, opts);
